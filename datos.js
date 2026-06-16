@@ -50,33 +50,33 @@ const DATOS = {
       arriba:{ titulo:"La idea", cuerpo:"El procedimiento fue iniciativa de tres artistas visuales: Rodolfo Aguerreberry, Julio Flores y Guillermo Kexel." },
       abajo: { titulo:"La idea", cuerpo:"Llevaron una propuesta escrita a las Madres de Plaza de Mayo, detallando su intención de realizar <b>30.000 imágenes</b> de figuras humanas a tamaño natural." } },
 
-    { tipo:"doc", bg:"negro", fotos:3, fotosArr:["img/Rodolfo.jpg","img/Julio.jpg","img/Guillermo.jpg"],
+    { tipo:"doc", bg:"negro", fotos:3, fotosArr:["img/Rodolfo.png","img/Julio.png","img/Guillermo.png"],
       cita:"Rodolfo Aguerreberry, Julio Flores y Guillermo Kexel." },
 
     { tipo:"nota", bg:"papel", lado:"der", titulo:"Las Abuelas",
       cuerpo:"“Las siluetas deben estar de pie, erguidas. En el suelo eran símbolo de muerte.”" },
 
-    { tipo:"doc", bg:"negro", fotos:1, foto:"img/2.jpg",
+    { tipo:"doc", bg:"negro", fotos:1, fotoTexto:"silueta de embarazadas",
       cita:"Fueron las Abuelas las que vinieron al local y preguntaron dónde estaban las siluetas de las embarazadas y los niños desaparecidos. Ninguno de nosotros lo había pensado." },
 
     { tipo:"nota", bg:"papel", lado:"izq", titulo:"El silencio",
       cuerpo:"Las siluetas ayudaron a la ruptura del pacto de silencio. Lo denunciaron." },
 
-    { tipo:"doc", bg:"negro", fotos:1, foto:"img/3.jpg",
+    { tipo:"doc", bg:"negro", fotos:1, foto:"img/5.jpg",
       cita:"Las siluetas tienen relación con el silencio. Todo el mundo sabía pero nadie hablaba de ello. Era un gran pacto tácito de silencio." },
 
     { tipo:"nota-doble", bg:"papel",
       arriba:{ titulo:"Hecho gráfico", cuerpo:"La propuesta inicial no habla de arte, sino de crear un hecho gráfico que golpee por su magnitud física y por lo inusual de su realización." },
       abajo: { titulo:"Estética y política", cuerpo:"La toma política no se podría haber dado sin la toma estética. Implica una recuperación de los <b>lazos solidarios</b> perdidos en la dictadura." } },
 
-    { tipo:"doc", bg:"negro", fotos:1, foto:"img/4.jpg",
+    { tipo:"doc", bg:"negro", fotos:1, foto:"img/2.jpg",
       cita:"La conciencia del genocidio a partir del impacto de la imagen y de la transformación del espacio urbano." },
 
     { tipo:"nota-doble", bg:"papel",
       arriba:{ titulo:"Cualquiera podía", cuerpo:"No hacía falta saber dibujar. Te acostabas, alguien marcaba tu contorno, y listo. El que miraba pasaba a hacer." },
       abajo: { titulo:"Poner el cuerpo", cuerpo:"La acción de poner el cuerpo porta una <b>ambigüedad intrínseca</b>: ocupar el lugar del ausente es aceptar que cualquiera de los presentes <b>podría haber desaparecido</b>." } },
 
-    { tipo:"doc", bg:"negro", fotos:1, foto:"img/5.jpg",
+    { tipo:"doc", bg:"negro", fotos:1, foto:"img/3.jpg",
       cita:"Algunos jóvenes se acostaban sobre el papel, y otros marcaban con lápiz el formato del cuerpo." },
 
     { tipo:"nota", bg:"papel", lado:"der", titulo:"La huella",

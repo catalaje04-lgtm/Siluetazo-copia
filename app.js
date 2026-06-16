@@ -317,10 +317,19 @@ function irRecorrido(){
     <section class="seccion-r cierre c-cta" data-bg="negro">
       <div class="eje"></div>
       <div class="cta rev">
-        <p class="cta-texto">En 1983, el espacio fue la calle. Hoy, la memoria también disputa las redes.</p>
-        <div class="cta-acciones">
-          <button id="compartir" class="btn-x">${LOGO_X} Compartir mi huella</button>
-          <button id="descargar" class="btn-sec">Descargar mi huella (.jpg)</button>
+        <p class="cta-intro">Siluetas nuestras, vacías. Cada una espera un nombre.</p>
+        <div class="cta-cols">
+          <div class="cta-col">
+            <p class="cta-texto">Si la que dibujaste tiene un nombre, te invitamos a contar su historia.</p>
+            <div class="cta-acciones">
+              <button id="compartir" class="btn-x">${LOGO_X} Compartir su historia</button>
+              <button id="descargar" class="btn-sec">Descargar mi huella (.jpg)</button>
+            </div>
+          </div>
+          <div class="cta-col cta-col-sep">
+            <p class="cta-texto">Si todavía no tiene nombre, buscá el de aquella que remarcaste.</p>
+            <a class="btn-busca" href="https://derechoshumanos.mjus.gba.gob.ar/?post_type=victima" target="_blank" rel="noopener">Registro de víctimas →</a>
+          </div>
         </div>
       </div>
     </section>
@@ -405,7 +414,7 @@ function irRecorrido(){
 
   function compartirX(){
     const url = location.href.split('#')[0];
-    const texto = 'Dibujé mi silueta. En 1983, el espacio fue la calle. Hoy, la memoria también disputa las redes. Sumá tu voz para que el pacto de silencio no se repita. #ElSiluetazo';
+    const texto = 'Por las 30.000. La silueta que remarqué tiene un nombre y una historia:\n\n[Contá acá quién fue]\n\nPara que el pacto de silencio no se repita. #ElSiluetazo';
     window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(texto)+'&url='+encodeURIComponent(url), '_blank', 'noopener');
   }
   // descarga en JPG (sin transparencia, sobrevive a redes) usando el patron del muro
