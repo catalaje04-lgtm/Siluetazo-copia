@@ -25,6 +25,13 @@ function guardarSilueta(s){ try{ sessionStorage.setItem('siluetazo:silueta', JSO
 function cargarSilueta(){ try{ const r = sessionStorage.getItem('siluetazo:silueta'); return r ? JSON.parse(r) : null; }catch(e){ return null; } }
 const clamp = (v,a,b)=> Math.max(a, Math.min(b, v));
 
+/* caja real (contain) donde se dibuja la silueta, para mapear puntos de foco */
+function contener(sil, caja){
+  const a = sil.aspecto; let w=caja.w, h=caja.w/a;
+  if(h>caja.h){ h=caja.h; w=caja.h*a; }
+  return { ox:caja.x+(caja.w-w)/2, oy:caja.y+(caja.h-h)/2, w, h };
+}
+
 /* dibuja la silueta guardada dentro de una caja (contain); contorno o relleno */
 function rellenarSilueta(c, sil, caja, tinta, contorno, lw){
   if(!sil) return;
@@ -247,6 +254,8 @@ function salirLienzo(lienzo){
    ========================================================= */
 function irRecorrido(){
   const sil = silueta || cargarSilueta();
+  const VIDEO = 'https://www.youtube.com/watch?v=TaqDxMBPYdk';
+  const LOGO_X = `<svg class="x-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`;
 
   // habilitar scroll y montar capas de fondo fijas
   document.body.classList.add('recorriendo');
@@ -257,28 +266,74 @@ function irRecorrido(){
     <div class="fondo-silueta"><canvas id="fSil"></canvas></div>
     <div class="cortina" id="cortina"></div>`);
 
-  const nota = (t,c)=> `<div class="nota"><span class="chinche"></span><h3>${t}</h3><p>${c}</p></div>`;
-  const ph   = '<div class="foto-ph">imagen de archivo<br>(placeholder)</div>';
+  const nota = (t,c)=> `<div class="nota"><h3>${t}</h3><p>${c}</p></div>`;
+  const phHTML = (label)=> `<div class="foto-ph">${label || 'imagen de archivo<br>(placeholder)'}</div>`;
 
   function seccionHTML(s){
     if(s.tipo === 'contexto')
       return `<section class="seccion-r r-contexto" data-bg="papel"><div class="eje rev"></div><div class="texto rev">${s.html}</div></section>`;
-    if(s.tipo === 'doc')
+    if(s.tipo === 'doc'){
+      const fotos = Array.from({length:s.fotos||1}, ()=> phHTML(s.fotoTexto)).join('');
       return `<section class="seccion-r r-doc" data-bg="negro"><div class="eje"></div>
-                <div class="fotos rev">${ph.repeat(s.fotos||1)}</div>
+                <div class="fotos rev">${fotos}</div>
                 <p class="cita rev"><span class="comillas">“</span>${s.cita}</p></section>`;
+    }
     if(s.tipo === 'nota')
-      return `<section class="seccion-r r-nota lado-${s.lado||'der'}" data-bg="papel"><div class="marco rev">${nota(s.titulo,s.cuerpo)}</div></section>`;
+      return `<section class="seccion-r r-nota lado-${s.lado||'der'}" data-bg="papel">
+                <div class="marco rev"><span class="chinche"></span>${nota(s.titulo,s.cuerpo)}</div></section>`;
     if(s.tipo === 'nota-doble')
-      return `<section class="seccion-r r-nota-doble" data-bg="papel"><div class="nota-stack rev">
-                <div class="abajo">${nota(s.abajo.titulo,s.abajo.cuerpo)}</div>
-                <div class="arriba">${nota(s.arriba.titulo,s.arriba.cuerpo)}</div></div></section>`;
+      // seccion alta + contenido sticky: la nota se fija mientras se desgarra (legible)
+      return `<section class="seccion-r r-nota-doble" data-bg="papel"><div class="sticky">
+                <div class="nota-stack rev"><span class="chinche"></span>
+                  <div class="abajo">${nota(s.abajo.titulo,s.abajo.cuerpo)}</div>
+                  <div class="arriba">${nota(s.arriba.titulo,s.arriba.cuerpo)}</div></div></div></section>`;
     return '';
   }
 
-  escena.innerHTML = `<div class="recorrido">${DATOS.desarrollo.map(seccionHTML).join('')}
-    <section class="cierre-stub"><p>Acá va el cierre: el muro de las 30.000, el documental y el compartir. Lo armamos en la etapa 3, sobre esta base.</p></section>
-  </div>`;
+  const cierreHTML = ()=> `
+    <section class="seccion-r cierre c-muro" data-bg="negro">
+      <div class="muro-wrap rev"><canvas id="muro"></canvas></div>
+      <div class="muro-cap rev">
+        <h2 class="c-titulo">Tu silueta, entre las 30.000</h2>
+        <p class="c-bajada">Hacer memoria, hoy, también es un gesto gráfico.</p>
+      </div>
+    </section>
+
+    <section class="seccion-r cierre c-doc" data-bg="negro">
+      <div class="eje"></div>
+      <div class="doc-ext rev">
+        <h3 class="doc-invita">Si querés saber más sobre el Siluetazo, te invitamos a ver el documental.</h3>
+        <a class="thumb" href="${VIDEO}" target="_blank" rel="noopener">
+          <img src="https://img.youtube.com/vi/TaqDxMBPYdk/hqdefault.jpg" alt="Documental sobre el Siluetazo"
+               onerror="this.style.display='none';this.parentNode.classList.add('sin-img')">
+          <span class="thumb-ph">documental<br>(miniatura)</span>
+          <span class="play" aria-hidden="true">►</span>
+          <span class="dur">24:06</span>
+        </a>
+        <p class="ficha">Este video forma parte de la investigación “Imágenes del siluetazo y otras estrategias creativas en el movimiento de Derechos Humanos en la Argentina” (2010-2011), de Fernanda Carvajal, Marcelo Expósito, Cora Gamarnik, Ana Longoni y Jaime Vindel.</p>
+      </div>
+    </section>
+
+    <section class="seccion-r cierre c-cta" data-bg="negro">
+      <div class="eje"></div>
+      <div class="cta rev">
+        <p class="cta-texto">En 1983, el espacio fue la calle. Hoy, la memoria también disputa las redes.</p>
+        <div class="cta-acciones">
+          <button id="compartir" class="btn-x">${LOGO_X} Compartir mi huella</button>
+          <button id="descargar" class="btn-sec">Descargar mi huella (.png)</button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="pie">
+      <div class="pie-grid">
+        <p class="pie-acad">Experiencia interactiva desarrollada en el marco de la asignatura Laboratorio Digital. Licenciatura en Diseño, Universidad Provincial de Córdoba (UPC). Año 2026.</p>
+        <p class="pie-cc">Este sitio y sus contenidos están bajo licencia <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.es" target="_blank" rel="noopener">Creative Commons Atribución-NoComercial-SinDerivadas 4.0 Internacional (CC BY-NC-ND 4.0)</a>. Se permite la distribución siempre que se reconozca la autoría, no se use con fines comerciales y no se generen obras derivadas.</p>
+      </div>
+      <button class="volver-inicio" id="volverPie">Volver al inicio ↑</button>
+    </footer>`;
+
+  escena.innerHTML = `<div class="recorrido">${DATOS.desarrollo.map(seccionHTML).join('')}${cierreHTML()}</div>`;
   window.scrollTo(0,0);
 
   // capas de fondo
@@ -286,6 +341,15 @@ function irRecorrido(){
   const fSil   = document.getElementById('fSil');
   const cortina= document.getElementById('cortina');
 
+  // puntos de foco sobre la figura (coords 0..1): cabeza, manos, torso, caderas, piernas
+  const TARGETS = [
+    {fx:.50,fy:.12,s:2.2}, {fx:.90,fy:.42,s:2.3}, {fx:.50,fy:.46,s:1.9},
+    {fx:.10,fy:.42,s:2.3}, {fx:.50,fy:.60,s:2.0}, {fx:.64,fy:.90,s:2.2},
+    {fx:.36,fy:.90,s:2.2}, {fx:.50,fy:.50,s:1.7}
+  ];
+  const suave = t => t*t*(3-2*t);
+
+  let rectSil = null;
   function dibujarFondo(){
     pintarPapel(fPapel);
     const r = ajustar(fSil);
@@ -293,6 +357,7 @@ function irRecorrido(){
     c.clearRect(0,0,r.width,r.height);
     const lado = Math.min(r.width, r.height);
     const box = { x:r.width*0.5 - lado*0.42, y:r.height*0.5 - lado*0.40, w:lado*0.84, h:lado*0.80 };
+    rectSil = contener(sil, box);
     rellenarSilueta(c, sil, box, 'rgba(20,18,16,0.92)', true, 4);   // la línea negra del trazo
   }
   requestAnimationFrame(()=> requestAnimationFrame(dibujarFondo));
@@ -304,16 +369,74 @@ function irRecorrido(){
   const io = new IntersectionObserver(es=> es.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); }), {threshold:.3});
   secciones.forEach(s=> io.observe(s));
 
+  /* ----- cierre (etapa 3): muro de las 30.000 + acciones ----- */
+  function dibujarMuro(){
+    const cv = document.getElementById('muro'); if(!cv || !sil) return;
+    const r = ajustar(cv);
+    const c = cv.getContext('2d');
+    c.clearRect(0,0,r.width,r.height);
+    const cell = Math.max(34, Math.min(r.width, r.height)/12);
+    const cols = Math.ceil(r.width/cell)+1, rows = Math.ceil(r.height/cell)+1;
+    const hc = Math.floor(cols/2), hr = Math.floor(rows/2);   // la del usuario, al centro
+    for(let row=0; row<rows; row++) for(let col=0; col<cols; col++){
+      c.save(); c.translate(col*cell + cell*0.5, row*cell + cell*0.5);
+      if(col===hc && row===hr){
+        const s = cell*1.3, caja = {x:-s/2, y:-s/2, w:s, h:s};
+        c.shadowColor='rgba(176,58,44,.75)'; c.shadowBlur=20;
+        rellenarSilueta(c, sil, caja, '#f1e7cf', false);      // hueso, destaca
+        c.shadowBlur=0;
+        rellenarSilueta(c, sil, caja, '#b03a2c', true, 3);    // contorno rojo
+      } else {
+        c.rotate((Math.random()*2-1)*0.18);
+        const s = cell*0.74*(0.82+Math.random()*0.3), caja = {x:-s/2, y:-s/2, w:s, h:s};
+        c.globalAlpha = 0.10 + Math.random()*0.22;            // gentío anónimo, gris tenue
+        rellenarSilueta(c, sil, caja, '#cfcabf', false);
+      }
+      c.restore();
+    }
+    // viñeta: el gentío se pierde hacia los bordes
+    const g = c.createRadialGradient(r.width/2, r.height/2, Math.min(r.width,r.height)*0.18, r.width/2, r.height/2, Math.max(r.width,r.height)*0.62);
+    g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,0.9)');
+    c.globalAlpha=1; c.fillStyle=g; c.fillRect(0,0,r.width,r.height);
+  }
+
+  function compartirX(){
+    const url = location.href.split('#')[0];
+    const texto = 'Dibujé mi silueta. En 1983, el espacio fue la calle. Hoy, la memoria también disputa las redes. Sumá tu voz para que el pacto de silencio no se repita. #ElSiluetazo';
+    window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(texto)+'&url='+encodeURIComponent(url), '_blank', 'noopener');
+  }
+  function descargarHuella(){
+    if(!sil) return;
+    const tam=1000, m=130, cv=document.createElement('canvas'); cv.width=tam; cv.height=tam;
+    const c=cv.getContext('2d');
+    rellenarSilueta(c, sil, {x:m, y:m, w:tam-2*m, h:tam-2*m}, '#141210', true, 9);
+    cv.toBlob(b=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='mi-huella.png'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1500); });
+  }
+
+  const alInicio = ()=> window.scrollTo({ top:0, behavior:'smooth' });
+  document.body.insertAdjacentHTML('beforeend', `<button class="volver-flota" id="volverFlota" aria-label="Volver a recorrer">↑</button>`);
+  const volverFlota = document.getElementById('volverFlota');
+  volverFlota.addEventListener('click', alInicio);
+  document.getElementById('volverPie')?.addEventListener('click', alInicio);
+  document.getElementById('compartir')?.addEventListener('click', compartirX);
+  document.getElementById('descargar')?.addEventListener('click', descargarHuella);
+  requestAnimationFrame(()=> requestAnimationFrame(dibujarMuro));
+
   // loop de scroll: paralaje de la silueta + crossfade papel/negro + desgarro
   let pidiendo = false;
   function actualizar(){
-    const vh = window.innerHeight;
+    const vh = window.innerHeight, vw = window.innerWidth;
 
-    // paralaje + leve zoom de la silueta de fondo (sobrevolar el dibujo)
-    if(!reducido){
+    // camara de fondo: enfoca distintas partes de la figura segun el avance del scroll
+    if(!reducido && sil && rectSil){
       const max = Math.max(1, document.body.scrollHeight - vh);
       const prog = clamp(window.scrollY / max, 0, 1);
-      fSil.style.transform = `translateY(${(-window.scrollY*0.12).toFixed(0)}px) scale(${(1.05 + prog*0.5).toFixed(3)})`;
+      const f = prog * (TARGETS.length - 1);
+      const i0 = Math.floor(f), i1 = Math.min(TARGETS.length-1, i0+1), t = suave(f - i0);
+      const A = TARGETS[i0], B = TARGETS[i1];
+      const fx = A.fx+(B.fx-A.fx)*t, fy = A.fy+(B.fy-A.fy)*t, S = A.s+(B.s-A.s)*t;
+      const px = rectSil.ox + fx*rectSil.w, py = rectSil.oy + fy*rectSil.h;
+      fSil.style.transform = `translate(${(vw/2 - px*S).toFixed(1)}px, ${(vh/2 - py*S).toFixed(1)}px) scale(${S.toFixed(3)})`;
     }
 
     // seccion activa -> cortina (negra en documentales, transparente en papel)
@@ -321,11 +444,17 @@ function irRecorrido(){
     secciones.forEach(s=>{ const r=s.getBoundingClientRect(); const d=Math.abs((r.top+r.height/2)-vh/2); if(d<mejor){ mejor=d; activa=s; } });
     cortina.style.opacity = (activa && activa.dataset.bg === 'negro') ? '1' : '0';
 
-    // desgarro de la nota de arriba, atado al scroll de su seccion
+    // boton flotante visible al acercarse al final
+    if(volverFlota){
+      const cerca = (window.scrollY + vh) > (document.body.scrollHeight - vh*1.2);
+      volverFlota.classList.toggle('ver', cerca);
+    }
+
+    // desgarro: progreso dentro de la seccion alta (la nota queda fija mientras se rompe)
     if(!reducido) arribas.forEach(a=>{
       const r = a.closest('.seccion-r').getBoundingClientRect();
-      const p = clamp((vh*0.5 - (r.top + r.height*0.5)) / (vh*0.5), 0, 1);
-      const tear = clamp((p - 0.12) / 0.55, 0, 1);
+      const prog = clamp(-r.top / Math.max(1, r.height - vh), 0, 1);
+      const tear = clamp((prog - 0.15) / 0.5, 0, 1);
       a.style.transform = `translateY(${(tear*130).toFixed(0)}%) rotate(${(3 + tear*15).toFixed(1)}deg) scale(${(1 + tear*0.12).toFixed(3)})`;
       a.style.opacity = (1 - tear).toFixed(2);
     });
@@ -333,7 +462,7 @@ function irRecorrido(){
     pidiendo = false;
   }
   window.addEventListener('scroll', ()=>{ if(!pidiendo){ requestAnimationFrame(actualizar); pidiendo=true; } }, {passive:true});
-  window.addEventListener('resize', ()=>{ dibujarFondo(); actualizar(); });
+  window.addEventListener('resize', ()=>{ dibujarFondo(); dibujarMuro(); actualizar(); });
   actualizar();
 }
 
