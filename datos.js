@@ -50,7 +50,7 @@ const DATOS = {
       arriba:{ titulo:"La idea", cuerpo:"El procedimiento fue iniciativa de tres artistas visuales: Rodolfo Aguerreberry, Julio Flores y Guillermo Kexel." },
       abajo: { titulo:"La idea", cuerpo:"Llevaron una propuesta escrita a las Madres de Plaza de Mayo, detallando su intención de realizar <b>30.000 imágenes</b> de figuras humanas a tamaño natural." } },
 
-    { tipo:"doc", bg:"negro", fotos:3,
+    { tipo:"doc", bg:"negro", fotos:3, fotosArr:["img/Rodolfo.jpg","img/Julio.jpg","img/Guillermo.jpg"],
       cita:"Rodolfo Aguerreberry, Julio Flores y Guillermo Kexel." },
 
     { tipo:"nota", bg:"papel", lado:"der", titulo:"Las Abuelas",

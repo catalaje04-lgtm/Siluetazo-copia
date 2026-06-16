@@ -11,13 +11,8 @@ const color = v => getComputedStyle(document.documentElement).getPropertyValue(v
 const escena = document.getElementById('escena');
 
 /* figura humana de la guia (plantilla a trazar) */
-const SVG_FIG = `<svg class="fig" viewBox="0 0 600 520" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-  <path d="M300 20 C372 20 392 96 372 150 C362 178 350 188 338 196
-    C432 176 522 196 566 214 C578 230 560 252 470 244 C412 240 372 232 344 226
-    C356 270 366 300 372 332 C388 394 396 448 372 488 C360 504 332 502 322 472 C312 432 306 360 300 300
-    C294 360 288 432 278 472 C268 502 240 504 228 488 C204 448 212 394 228 332
-    C234 300 244 270 256 226 C228 232 188 240 130 244 C40 252 22 230 34 214 C78 196 168 176 262 196
-    C250 188 238 178 228 150 C208 96 228 20 300 20 Z"/></svg>`;
+const SVG_FIG = `<svg class="fig" viewBox="0 0 600 680" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+  <path d="M300 30 C356 30 374 84 366 134 C360 160 346 172 330 180 C352 186 368 190 376 202 C446 212 526 256 566 302 C580 317 570 338 542 338 C468 336 414 308 388 274 C384 330 380 392 386 430 C424 498 436 566 434 636 C434 660 402 662 392 648 C364 604 344 520 322 466 C314 448 306 442 300 442 C294 442 286 448 278 466 C256 520 236 604 208 648 C198 662 166 660 166 636 C164 566 176 498 214 430 C220 392 216 330 212 274 C186 308 132 336 58 338 C30 338 20 317 34 302 C74 256 154 212 224 202 C232 190 248 186 270 180 C254 172 240 160 234 134 C226 84 244 30 300 30 Z"/></svg>`;
 
 /* silueta normalizada (0..1) — se guarda para las etapas siguientes */
 let silueta = null;
@@ -348,9 +343,9 @@ function irRecorrido(){
 
   // puntos de foco sobre la figura (coords 0..1): cabeza, manos, torso, caderas, piernas
   const TARGETS = [
-    {fx:.50,fy:.12,s:2.2}, {fx:.90,fy:.42,s:2.3}, {fx:.50,fy:.46,s:1.9},
-    {fx:.10,fy:.42,s:2.3}, {fx:.50,fy:.60,s:2.0}, {fx:.64,fy:.90,s:2.2},
-    {fx:.36,fy:.90,s:2.2}, {fx:.50,fy:.50,s:1.7}
+    {fx:.50,fy:.12,s:2.2}, {fx:.92,fy:.48,s:2.3}, {fx:.50,fy:.38,s:1.9},
+    {fx:.08,fy:.48,s:2.3}, {fx:.50,fy:.62,s:2.0}, {fx:.68,fy:.92,s:2.2},
+    {fx:.32,fy:.92,s:2.2}, {fx:.50,fy:.50,s:1.6}
   ];
   const suave = t => t*t*(3-2*t);
 
