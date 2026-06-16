@@ -267,15 +267,20 @@ function irRecorrido(){
     <div class="cortina" id="cortina"></div>`);
 
   const nota = (t,c)=> `<div class="nota"><h3>${t}</h3><p>${c}</p></div>`;
-  const phHTML = (label)=> `<div class="foto-ph">${label || 'imagen de archivo<br>(placeholder)'}</div>`;
+  const celda = (src,label)=> src
+    ? `<div class="foto-cel"><img src="${src}" alt="Fotografía de archivo del Siluetazo" loading="lazy" onerror="this.closest('.foto-cel').classList.add('sin'); this.remove();"><span class="foto-ph">${label || 'imagen de archivo<br>(placeholder)'}</span></div>`
+    : `<div class="foto-cel sin"><span class="foto-ph">${label || 'imagen de archivo<br>(placeholder)'}</span></div>`;
 
   function seccionHTML(s){
     if(s.tipo === 'contexto')
       return `<section class="seccion-r r-contexto" data-bg="papel"><div class="eje rev"></div><div class="texto rev">${s.html}</div></section>`;
     if(s.tipo === 'doc'){
-      const fotos = Array.from({length:s.fotos||1}, ()=> phHTML(s.fotoTexto)).join('');
-      return `<section class="seccion-r r-doc" data-bg="negro"><div class="eje"></div>
-                <div class="fotos rev">${fotos}</div>
+      const n = s.fotos || 1;
+      const paths = s.foto ? [s.foto] : (s.fotosArr || []);
+      const celdas = Array.from({length:n}, (_,i)=> celda(paths[i], s.fotoTexto)).join('');
+      const clase = n === 1 ? 'una' : (n === 3 ? 'tres' : '');
+      return `<section class="seccion-r r-doc ${clase}" data-bg="negro"><div class="eje"></div>
+                <div class="fotos rev">${celdas}</div>
                 <p class="cita rev"><span class="comillas">“</span>${s.cita}</p></section>`;
     }
     if(s.tipo === 'nota')
@@ -320,7 +325,7 @@ function irRecorrido(){
         <p class="cta-texto">En 1983, el espacio fue la calle. Hoy, la memoria también disputa las redes.</p>
         <div class="cta-acciones">
           <button id="compartir" class="btn-x">${LOGO_X} Compartir mi huella</button>
-          <button id="descargar" class="btn-sec">Descargar mi huella (.png)</button>
+          <button id="descargar" class="btn-sec">Descargar mi huella (.jpg)</button>
         </div>
       </div>
     </section>
@@ -370,14 +375,11 @@ function irRecorrido(){
   secciones.forEach(s=> io.observe(s));
 
   /* ----- cierre (etapa 3): muro de las 30.000 + acciones ----- */
-  function dibujarMuro(){
-    const cv = document.getElementById('muro'); if(!cv || !sil) return;
-    const r = ajustar(cv);
-    const c = cv.getContext('2d');
-    c.clearRect(0,0,r.width,r.height);
-    const cell = Math.max(34, Math.min(r.width, r.height)/12);
-    const cols = Math.ceil(r.width/cell)+1, rows = Math.ceil(r.height/cell)+1;
-    const hc = Math.floor(cols/2), hr = Math.floor(rows/2);   // la del usuario, al centro
+  // patron reutilizable: gentío anónimo en gris + la silueta del usuario destacada al centro
+  function pintarMuro(c, W, H){
+    const cell = Math.max(34, Math.min(W, H)/12);
+    const cols = Math.ceil(W/cell)+1, rows = Math.ceil(H/cell)+1;
+    const hc = Math.floor(cols/2), hr = Math.floor(rows/2);
     for(let row=0; row<rows; row++) for(let col=0; col<cols; col++){
       c.save(); c.translate(col*cell + cell*0.5, row*cell + cell*0.5);
       if(col===hc && row===hr){
@@ -394,10 +396,16 @@ function irRecorrido(){
       }
       c.restore();
     }
-    // viñeta: el gentío se pierde hacia los bordes
-    const g = c.createRadialGradient(r.width/2, r.height/2, Math.min(r.width,r.height)*0.18, r.width/2, r.height/2, Math.max(r.width,r.height)*0.62);
+    const g = c.createRadialGradient(W/2, H/2, Math.min(W,H)*0.18, W/2, H/2, Math.max(W,H)*0.62);
     g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,0.9)');
-    c.globalAlpha=1; c.fillStyle=g; c.fillRect(0,0,r.width,r.height);
+    c.globalAlpha=1; c.fillStyle=g; c.fillRect(0,0,W,H);
+  }
+  function dibujarMuro(){
+    const cv = document.getElementById('muro'); if(!cv || !sil) return;
+    const r = ajustar(cv);
+    const c = cv.getContext('2d');
+    c.clearRect(0,0,r.width,r.height);
+    pintarMuro(c, r.width, r.height);
   }
 
   function compartirX(){
@@ -405,12 +413,19 @@ function irRecorrido(){
     const texto = 'Dibujé mi silueta. En 1983, el espacio fue la calle. Hoy, la memoria también disputa las redes. Sumá tu voz para que el pacto de silencio no se repita. #ElSiluetazo';
     window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(texto)+'&url='+encodeURIComponent(url), '_blank', 'noopener');
   }
+  // descarga en JPG (sin transparencia, sobrevive a redes) usando el patron del muro
   function descargarHuella(){
     if(!sil) return;
-    const tam=1000, m=130, cv=document.createElement('canvas'); cv.width=tam; cv.height=tam;
+    const W=1080, H=1080, cv=document.createElement('canvas'); cv.width=W; cv.height=H;
     const c=cv.getContext('2d');
-    rellenarSilueta(c, sil, {x:m, y:m, w:tam-2*m, h:tam-2*m}, '#141210', true, 9);
-    cv.toBlob(b=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='mi-huella.png'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1500); });
+    c.fillStyle='#0a0a0a'; c.fillRect(0,0,W,H);
+    pintarMuro(c, W, H);
+    c.globalAlpha=1; c.textAlign='center';
+    c.fillStyle='#ffffff'; c.font='800 46px "Work Sans", system-ui, sans-serif';
+    c.fillText('TU SILUETA, ENTRE LAS 30.000', W/2, H-84);
+    c.fillStyle='#cfcabf'; c.font='22px "Special Elite", monospace';
+    c.fillText('#ElSiluetazo', W/2, H-48);
+    cv.toBlob(b=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='mi-huella.jpg'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1500); }, 'image/jpeg', 0.92);
   }
 
   const alInicio = ()=> window.scrollTo({ top:0, behavior:'smooth' });
