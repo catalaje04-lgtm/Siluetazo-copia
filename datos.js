@@ -23,7 +23,7 @@ const DATOS = {
   ],
 
   // tiempos de la secuencia narrativa (en ms) — ajustables
-  ritmo: { fadeIn:600, hold:2000, fadeOut:600, gap:300 },
+  ritmo: { fadeIn:600, hold:2500, fadeOut:600, gap:300 },
 
   // PANTALLA 3 — lienzo (el gancho interactivo)
   lienzo: {
